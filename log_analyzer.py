@@ -4,7 +4,7 @@ import json
 import os
 import re
 from typing import Optional
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 from config import FRAUD_PATTERNS, GEMINI_MODEL, PROCESSED_LOGS_FILE
 
@@ -13,8 +13,7 @@ load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
 if not api_key:
     raise EnvironmentError("❌ GEMINI_API_KEY não encontrada. Verifique seu arquivo .env")
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel(GEMINI_MODEL)
+client = genai.Client(api_key=api_key)
 
 
 def _heuristic_pre_check(log_entry: dict) -> Optional[str]:
@@ -111,9 +110,7 @@ def analyze_logs(logs: list[dict], verbose: bool = True) -> list[dict]:
         if is_suspicious:
             send_alert(log, classification_result["justification"])
 
-    # Salva logs processados para o dashboard
     _save_processed_logs(results)
-
     return results
 
 
@@ -129,7 +126,6 @@ def _save_processed_logs(logs: list[dict]) -> None:
         except Exception:
             existing = []
 
-    # Evita duplicatas por timestamp + user_id
     existing_keys = {(e.get("timestamp"), e.get("user_id")) for e in existing}
     new_logs = [l for l in logs if (l.get("timestamp"), l.get("user_id")) not in existing_keys]
 
