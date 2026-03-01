@@ -6,12 +6,10 @@ import re
 from typing import Optional
 import google.generativeai as genai
 from dotenv import load_dotenv
-from config import FRAUD_PATTERNS, GEMINI_MODEL
+from config import FRAUD_PATTERNS, GEMINI_MODEL, PROCESSED_LOGS_FILE
 
-# Carrega as variáveis do arquivo .env automaticamente
+# Carrega variáveis do .env
 load_dotenv()
-
-# Configura a API Key do Gemini
 api_key = os.environ.get("GEMINI_API_KEY")
 if not api_key:
     raise EnvironmentError("❌ GEMINI_API_KEY não encontrada. Verifique seu arquivo .env")
@@ -89,7 +87,9 @@ Responda SOMENTE no seguinte formato JSON (sem markdown, sem blocos de código):
 
 
 def analyze_logs(logs: list[dict], verbose: bool = True) -> list[dict]:
-    """Analisa uma lista de logs e retorna os resultados com classificações."""
+    """Analisa uma lista de logs, dispara alertas para suspeitos e salva os resultados."""
+    from alert_manager import send_alert
+
     results = []
     total = len(logs)
     print(f"\n🔍 Analisando {total} entradas de log...\n")
@@ -102,18 +102,48 @@ def analyze_logs(logs: list[dict], verbose: bool = True) -> list[dict]:
         entry = {**log, "analysis": classification_result}
         results.append(entry)
 
+        is_suspicious = "SUSPEITO" in classification_result["classification"]
+
         if verbose:
-            icon = "🚨" if "SUSPEITO" in classification_result["classification"] else "✅"
+            icon = "🚨" if is_suspicious else "✅"
             print(f"{icon} {classification_result['classification']}")
+
+        if is_suspicious:
+            send_alert(log, classification_result["justification"])
+
+    # Salva logs processados para o dashboard
+    _save_processed_logs(results)
 
     return results
 
 
+def _save_processed_logs(logs: list[dict]) -> None:
+    """Persiste os logs processados para uso no dashboard."""
+    os.makedirs(os.path.dirname(PROCESSED_LOGS_FILE), exist_ok=True)
+
+    existing = []
+    if os.path.exists(PROCESSED_LOGS_FILE):
+        try:
+            with open(PROCESSED_LOGS_FILE, "r", encoding="utf-8") as f:
+                existing = json.load(f)
+        except Exception:
+            existing = []
+
+    # Evita duplicatas por timestamp + user_id
+    existing_keys = {(e.get("timestamp"), e.get("user_id")) for e in existing}
+    new_logs = [l for l in logs if (l.get("timestamp"), l.get("user_id")) not in existing_keys]
+
+    combined = existing + new_logs
+    with open(PROCESSED_LOGS_FILE, "w", encoding="utf-8") as f:
+        json.dump(combined, f, ensure_ascii=False, indent=2, default=str)
+
+    if new_logs:
+        print(f"\n💾 {len(new_logs)} novo(s) log(s) salvo(s) em '{PROCESSED_LOGS_FILE}'")
+
+
 def generate_report(analyzed_logs: list[dict]) -> dict:
-    """Gera um relatório de fraudes a partir dos logs analisados."""
     suspicious = [l for l in analyzed_logs if "SUSPEITO" in l.get("analysis", {}).get("classification", "")]
     normal = [l for l in analyzed_logs if "SUSPEITO" not in l.get("analysis", {}).get("classification", "")]
-
     return {
         "summary": {
             "total_analyzed": len(analyzed_logs),
