@@ -1,0 +1,74 @@
+[
+  {
+    "timestamp": "2026-02-22T15:08:14.461519",
+    "user_id": "user_010",
+    "event_type": "access_resource",
+    "source_ip": "70.225.213.113",
+    "status": "denied",
+    "details": {
+      "resource": "/users/all",
+      "reason": "Insufficient privileges",
+      "attempts": 3
+    },
+    "analysis": {
+      "classification": "SUSPEITO/FRAUDE",
+      "justification": "O usuário tentou acessar um recurso altamente restrito ('/users/all') múltiplas vezes (3 tentativas), sendo negado por privilégios insuficientes. Embora o acesso tenha sido bloqueado, a persistência na tentativa de acesso a um recurso sensível é um comportamento suspeito que exige investigação."
+    }
+  },
+  {
+    "timestamp": "2026-02-24T02:44:49.461407",
+    "user_id": "user_001",
+    "event_type": "access_resource",
+    "source_ip": "130.226.96.126",
+    "status": "denied",
+    "details": {
+      "resource": "/users/all",
+      "reason": "Insufficient privileges",
+      "attempts": 2
+    },
+    "analysis": {
+      "classification": "SUSPEITO/FRAUDE",
+      "justification": "Múltiplas tentativas (2) de acesso negado a um recurso altamente restrito (`/users/all`) por falta de privilégios. Isso sugere uma tentativa de escalonamento de privilégios ou exploração."
+    }
+  },
+  {
+    "timestamp": "2026-02-24T18:45:25.461254",
+    "user_id": "user_009",
+    "event_type": "access_resource",
+    "source_ip": "219.140.91.61",
+    "status": "denied",
+    "details": {
+      "resource": "/export/data",
+      "reason": "Insufficient privileges",
+      "attempts": 4
+    },
+    "analysis": {
+      "classification": "SUSPEITO/FRAUDE",
+      "justification": "Múltiplas (4) tentativas negadas de acesso a um recurso restrito ('/export/data') devido a privilégios insuficientes indicam uma possível tentativa de acesso não autorizado ou sondagem maliciosa."
+    }
+  },
+  {
+    "timestamp": "2026-02-23T08:33:21.461104",
+    "user_id": "user_011",
+    "event_type": "logout",
+    "source_ip": "12.61.157.144",
+    "status": "success",
+    "details": {},
+    "analysis": {
+      "classification": "NORMAL",
+      "justification": "É um evento de logout bem-sucedido para um usuário específico de um endereço IP, o que é uma operação de sistema rotineira sem indicadores anômalos."
+    }
+  },
+  {
+    "timestamp": "2026-02-27T00:55:03.460931",
+    "user_id": "user_009",
+    "event_type": "profile_update",
+    "source_ip": "2.179.64.78",
+    "status": "success",
+    "details": {},
+    "analysis": {
+      "classification": "NORMAL",
+      "justification": "O log indica uma atualização de perfil bem-sucedida, que é uma ação rotineira do usuário. Não há sinais evidentes de atividades suspeitas, como tentativas falhas, eventos incomuns ou contexto adicional para justificar uma classificação de fraude."
+    }
+  }
+]

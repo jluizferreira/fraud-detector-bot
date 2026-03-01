@@ -53,7 +53,7 @@ def cmd_report(file=None):
 
 def cmd_dashboard():
     print("🚀 Iniciando dashboard... Acesse http://localhost:8501")
-    os.system("streamlit run dashboard.py")
+    os.system("python -m streamlit run dashboard.py")
 
 
 def print_help():
