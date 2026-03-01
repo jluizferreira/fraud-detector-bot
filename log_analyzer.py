@@ -71,7 +71,7 @@ Responda SOMENTE no seguinte formato JSON (sem markdown, sem blocos de código):
   "justification": "sua justificativa aqui"
 }}"""
 
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
     raw_text = response.text.strip()
 
     try:
