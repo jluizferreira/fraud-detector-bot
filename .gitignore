@@ -1,0 +1,16 @@
+# Ambiente virtual
+venv/
+.env
+
+# Arquivos gerados pelo bot
+simulated_logs.json
+fraud_report.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# VS Code
+.vscode/
